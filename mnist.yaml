@@ -1,0 +1,103 @@
+apiVersion: kubeflow.org/v1
+kind: TFJob
+metadata:
+  name: mnist-train-dist
+  namespace: kubeflow
+spec:
+  tfReplicaSpecs: # three different roles
+    Chief:
+      replicas: 1
+      template:
+        metadata:
+          annotations:
+            sidecar.istio.io/inject: "false"
+        spec:
+          containers:
+            - command:
+                - /usr/bin/python
+                - /opt/model.py # execute the same program, will distinguish the roles in the code using env var.
+                - --tf-model-dir=$(modelDir)
+                - --tf-export-dir=$(exportDir)
+                - --tf-train-steps=$(trainSteps)
+                - --tf-batch-size=$(batchSize)
+                - --tf-learning-rate=$(learningRate)
+              env:
+                - name: modelDir
+                  value: gs://${BUCKET}/my-model
+                - name: exportDir
+                  value: gs://${BUCKET}/my-model/export
+                - name: trainSteps
+                  value: "200"
+                - name: batchSize
+                  value: "100"
+                - name: learningRate
+                  value: "0.01"
+              image: gcr.io/kubeflow-examples/mnist/model:build-1202842504546750464 # using the same image
+              name: tensorflow
+              workingDir: /opt
+          restartPolicy: OnFailure
+          serviceAccount: k8s-sa # need SA to access GCS
+    Ps:
+      replicas: 1
+      template:
+        metadata:
+          annotations:
+            sidecar.istio.io/inject: "false"
+        spec:
+          containers:
+            - command:
+                - /usr/bin/python
+                - /opt/model.py
+                - --tf-model-dir=$(modelDir)
+                - --tf-export-dir=$(exportDir)
+                - --tf-train-steps=$(trainSteps)
+                - --tf-batch-size=$(batchSize)
+                - --tf-learning-rate=$(learningRate)
+              env:
+                - name: modelDir
+                  value: gs://${BUCKET}/my-model
+                - name: exportDir
+                  value: gs://${BUCKET}/my-model/export
+                - name: trainSteps
+                  value: "200"
+                - name: batchSize
+                  value: "100"
+                - name: learningRate
+                  value: "0.01"
+              image: gcr.io/kubeflow-examples/mnist/model:build-1202842504546750464
+              name: tensorflow
+              workingDir: /opt
+          restartPolicy: OnFailure
+          serviceAccount: k8s-sa
+    Worker:
+      replicas: 2
+      template:
+        metadata:
+          annotations:
+            sidecar.istio.io/inject: "false"
+        spec:
+          containers:
+            - command:
+                - /usr/bin/python
+                - /opt/model.py
+                - --tf-model-dir=$(modelDir)
+                - --tf-export-dir=$(exportDir)
+                - --tf-train-steps=$(trainSteps)
+                - --tf-batch-size=$(batchSize)
+                - --tf-learning-rate=$(learningRate)
+              env:
+                - name: modelDir
+                  value: gs://${BUCKET}/my-model
+                - name: exportDir
+                  value: gs://${BUCKET}/my-model/export
+                - name: trainSteps
+                  value: "200"
+                - name: batchSize
+                  value: "100"
+                - name: learningRate
+                  value: "0.01"
+              image: gcr.io/kubeflow-examples/mnist/model:build-1202842504546750464
+              name: tensorflow
+              workingDir: /opt
+          restartPolicy: OnFailure
+          serviceAccount: k8s-sa

@@ -1,0 +1,18 @@
+apiVersion: "serving.kubeflow.org/v1alpha2"
+kind: "InferenceService"
+metadata:
+  name: "mnist"
+  namespace: "kubeflow"
+spec:
+  default:
+    predictor:
+      minReplicas: 1
+      serviceAccountName: k8s-sa
+      tensorflow:
+        storageUri: "gs://jack-kubeflow-gcs/my-model/export"
+    transformer:
+      minReplicas: 1
+      custom:
+        container:
+          image: jackfantasy/image-transformer:v1
+          name: kfserving-container
