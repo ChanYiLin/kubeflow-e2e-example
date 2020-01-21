@@ -9,7 +9,7 @@ spec:
       minReplicas: 1
       serviceAccountName: k8s-sa
       tensorflow:
-        storageUri: "gs://jack-kubeflow-gcs/my-model/export"
+        storageUri: "gs://${BUCKET}/my-model/export"
     transformer:
       minReplicas: 1
       custom:
