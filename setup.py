@@ -15,7 +15,7 @@ setup(
         "pandas>=0.24.2",
         "numpy>=1.16.3",
         "kubernetes >= 9.0.0",
-        "Pillow == 7.0.0",
+        "Pillow == 8.2.0",
         "opencv-python-headless==4.0.0.21",
     ],
 )
